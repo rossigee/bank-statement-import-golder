@@ -79,6 +79,7 @@ class AccountBankStatementImport(models.TransientModel):
 
         # Get statement name from date of first line
         lines = st_vals['line_ids']
+        journal_id = st_vals['journal_id']
         if len(lines) == 0:
             raise UserError(_('No lines found in statement'))
         st_name = lines[0][2]['date'][0:7]
@@ -86,7 +87,8 @@ class AccountBankStatementImport(models.TransientModel):
         # If no statement for this date, create one and return it
         journal_id = st_vals['journal_id']
         stmt = BankStatement.search([
-            ('name', '=', st_name)
+            ('name', '=', st_name),
+            ('journal_id', '=', journal_id)
         ], limit=1)
         if not(bool(stmt)):
             return BankStatement.create(st_vals).id
