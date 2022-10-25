@@ -3,7 +3,7 @@
 
 {
     'name': 'Online Bank Statements Updater',
-    'version': '13.0.1.0.0',
+    'version': '14.0.1.0.0',
     'author':
         'Ross Golder',
     'website': 'https://golder.org/',
