@@ -11,10 +11,10 @@
     'category': 'Accounting',
     'summary': 'Update bank statements already imported',
     'depends': [
-        'account_bank_statement_import',
+        'account_statement_import',
     ],
     'data': [
-        'views/account_bank_statement_update.xml',
+        'views/account_statement_update.xml',
     ],
     'installable': True,
 }
