@@ -27,7 +27,7 @@ class AccountStatementImport(models.TransientModel):
         already imported transactions, and returns data used by the
         reconciliation widget.
         """
-        statement_line = self.env['account.statement.line']
+        statement_line = self.env['account.bank.statement.line']
 
         # Filter out already imported transactions and create statements
         statement_ids = []
@@ -89,8 +89,8 @@ class AccountStatementImport(models.TransientModel):
         return stmts_vals
 
     def _find_or_create_statement_ids(self, st_vals):
-        statement = self.env['account.statement']
-        statement_line = self.env['account.statement.line']
+        statement = self.env['account.bank.statement']
+        statement_line = self.env['account.bank.statement.line']
 
         # Get statement name from date of first line
         lines = st_vals['line_ids']
