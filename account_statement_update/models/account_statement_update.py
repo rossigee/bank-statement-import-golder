@@ -30,8 +30,6 @@ class AccountStatementImport(models.TransientModel):
         abs_obj = self.env["account.bank.statement"]
         absl_obj = self.env["account.bank.statement.line"]
 
-        _logger.info(f"Processing statement lines into existing statements where possible")
-
         # Filter out already imported transactions and create statements.
         statement_ids = []
         existing_st_lines = {}
@@ -68,11 +66,6 @@ class AccountStatementImport(models.TransientModel):
                 # Create (or update) the statement with lines
                 statement_id = self._find_or_create_statement_ids(st_vals, st_lines_to_create)
                 statement_ids.append(statement_id)
-
-            # What do we have for this statement?
-            _logger.info(f"Existing line ids: {existing_st_lines}")
-            _logger.info(f"Lines to create: {st_lines_to_create}")
-            _logger.info(f"Statement ids: {statement_ids}")
         
         if not statement_ids:
             return False
