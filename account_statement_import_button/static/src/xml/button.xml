@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates id="statement_view_import_button_template" xml:space="preserve">
+    <t t-log="journal_type"/>
+    <t t-debug="'DEBUGMOTHERFUCKER'"/>
+    <t t-js = "ctx"> 
+        console.log ("cool", ctx); 
+    </t>
+    <t t-extend="ListView.buttons">
+        <t t-jquery="button.o_list_button_add" t-operation="after">
+            <button type="button" class="btn btn-primary o_list_button_import">
+                Import
+            </button>
+        </t>
+    </t>
+</templates>

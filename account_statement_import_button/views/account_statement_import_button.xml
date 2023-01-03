@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2022 Ross Golder (https://golder.org)
+    License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+-->
+<odoo>
+    <data>
+        <template id="assets_backend" name="account_statement_import_button_assets" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+                <script src="/account_statement_import_button/static/src/js/button.js" type="text/javascript"/>
+            </xpath>
+        </template>
+    </data>
+</odoo>
