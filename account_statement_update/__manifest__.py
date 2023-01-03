@@ -2,14 +2,14 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 {
-    'name': 'Online Bank Statements Updater',
+    'name': 'Custom bank statements handler',
     'version': '14.0.1.0.0',
     'author':
         'Ross Golder',
     'website': 'https://golder.org/',
     'license': 'AGPL-3',
     'category': 'Accounting',
-    'summary': 'Update bank statements already imported',
+    'summary': 'Imports new lines into an existing bank statement.',
     'depends': [
         'account_statement_import',
     ],
