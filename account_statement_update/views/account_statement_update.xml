@@ -10,7 +10,7 @@
         <field name="inherit_id" ref="account_statement_import.account_statement_import_form"/>
         <field name="arch" type="xml">
             <xpath expr="//ul[@id='statement_format']" position="after">
-                <p>NOTE: Bank statement updates and month naming activated</p>
+                <p><b>NOTE: Bank statements are expected to follow the 'YYYY-MM' format</b></p>
             </xpath>
         </field>
     </record>
