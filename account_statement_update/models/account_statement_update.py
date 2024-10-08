@@ -86,7 +86,7 @@ class AccountStatementImport(models.TransientModel):
                     "details": {
                         "name": _("Already imported items"),
                         "model": "account.bank.statement.line",
-                        "ids": list([x.id for x in existing_st_lines]),
+                        "ids": list([existing_st_lines.keys()]),
                     },
                 }
             )
