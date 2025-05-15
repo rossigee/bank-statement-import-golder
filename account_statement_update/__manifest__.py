@@ -3,7 +3,7 @@
 
 {
     'name': 'Custom bank statements handler',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.1',
     'author':
         'Ross Golder',
     'website': 'https://golder.org/',
@@ -11,7 +11,7 @@
     'category': 'Accounting',
     'summary': 'Imports new lines into an existing bank statement.',
     'depends': [
-        'account_statement_import',
+        'account_statement_import_base',
     ],
     'data': [
         'views/account_statement_update.xml',
