@@ -3,7 +3,7 @@
 
 {
     'name': 'Statement List Import Button',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'author':
         'Ross Golder',
     'website': 'https://golder.org/',
@@ -11,7 +11,7 @@
     'category': 'Accounting',
     'summary': 'Add Import button to statement list view',
     'depends': [
-        'account_statement_import',
+        'account_statement_import_base',
     ],
     'data': [
         'views/account_statement_import_button.xml',
