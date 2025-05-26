@@ -31,10 +31,9 @@ class AccountStatementImport(models.TransientModel):
         absl_obj = self.env["account.bank.statement.line"]
 
         # Filter out already imported transactions and create statements.
-        statement_ids = []
         existing_st_lines = {}
+        st_lines_to_create = []
         for st_vals in stmts_vals:
-            st_lines_to_create = []
             for lvals in st_vals["transactions"]:
                 existing_line = False
                 if lvals.get("unique_import_id"):
@@ -53,23 +52,23 @@ class AccountStatementImport(models.TransientModel):
                 else:
                     st_lines_to_create.append(lvals)
 
-            if len(st_lines_to_create) > 0:
-                if not st_lines_to_create[0].get("sequence"):
-                    for seq, vals in enumerate(st_lines_to_create, start=1):
-                        vals["sequence"] = seq
+        # Remove values that won't be used to create records
+        st_vals.pop("transactions", None)
 
-                # Remove values that won't be used to create records
-                st_vals.pop("transactions", None)
+        # Resequence lines
+        if len(st_lines_to_create) > 0:
+            if not st_lines_to_create[0].get("sequence"):
+                for seq, vals in enumerate(st_lines_to_create, start=1):
+                    vals["sequence"] = seq
 
-                # NOTE: This is the part where we need to diverge from base/upstream...
+        # Create (or update) the statement with lines to be added
+        statement_id = self._find_or_create_statement_ids(st_vals, st_lines_to_create)
+        result["statement_ids"].extend([statement_id])
 
-                # Create (or update) the statement with lines
-                statement_id = self._find_or_create_statement_ids(st_vals, st_lines_to_create)
-                statement_ids.append(statement_id)
-        
-        if not statement_ids:
-            return False
-        result["statement_ids"].extend(statement_ids)
+        # Ensure existing lines are associated with this statement
+        for line_id, line in existing_st_lines.items():
+            if line.statement_id.id != statement_id:
+                line.write({'statement_id': statement_id})
 
         # Prepare import feedback
         num_ignored = len(existing_st_lines)
@@ -92,7 +91,8 @@ class AccountStatementImport(models.TransientModel):
             )
 
     # Override
-    def _complete_stmts_vals(self, stmts_vals, journal, _):
+    def _complete_stmts_vals(self, stmts_vals, journal, account_number):
+        speeddict = journal._statement_line_import_speeddict()
         for st_vals in stmts_vals:
             st_vals['journal_id'] = journal.id
 
@@ -102,10 +102,21 @@ class AccountStatementImport(models.TransientModel):
                 raise UserError(_('No transactions found in statement'))
             st_vals['name'] = transactions[0]['date'][0:7]
 
+            # As per superclass
+            for lvals in transactions:
+                lvals["journal_id"] = journal.id
+                journal._statement_line_import_update_unique_import_id(
+                    lvals, account_number
+                )
+                journal._statement_line_import_update_hook(lvals, speeddict)
+                if not lvals.get("payment_ref"):
+                    raise UserError(_("Missing payment_ref on a transaction."))
+
             # Set statement date based on last day of month
             year = int(st_vals['name'][0:4])
             month = int(st_vals['name'][5:7])
             st_vals['date'] = st_vals['name'] + "-" + str(monthrange(year, month)[1])
+
         return stmts_vals
 
     # Custom
@@ -118,10 +129,10 @@ class AccountStatementImport(models.TransientModel):
             ('name', '=', st_vals['name']),
             ('journal_id', '=', st_vals['journal_id'])
         ], limit=1)
-        if not bool(stmt):
-            return abs_obj.create(st_vals).id
+        if not stmt:
+            stmt = abs_obj.create(st_vals)
 
-        # Otherwise, add transactions to existing statement
+        # Add given transactions to statement
         for line in st_lines:
             line['statement_id'] = stmt.id
             absl_obj.create(line)
