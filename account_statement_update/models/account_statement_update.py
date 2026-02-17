@@ -73,22 +73,10 @@ class AccountStatementImport(models.TransientModel):
         # Prepare import feedback
         num_ignored = len(existing_st_lines)
         if num_ignored > 0:
-            result["notifications"].append(
-                {
-                    "type": "warning",
-                    "message": _(
-                        "%d transactions had already been imported and were ignored."
-                    )
-                    % num_ignored
-                    if num_ignored > 1
-                    else _("1 transaction had already been imported and was ignored."),
-                    "details": {
-                        "name": _("Already imported items"),
-                        "model": "account.bank.statement.line",
-                        "ids": list([existing_st_lines.keys()]),
-                    },
-                }
-            )
+            message = _(
+                "%d transactions had already been imported and were ignored."
+            ) % num_ignored if num_ignored > 1 else _("1 transaction had already been imported and was ignored.")
+            result["notifications"].append(message)
 
     # Override
     def _complete_stmts_vals(self, stmts_vals, journal, account_number):
