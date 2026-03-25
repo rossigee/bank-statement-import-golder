@@ -25,58 +25,58 @@ class AccountStatementImport(models.TransientModel):
         """
         Create new bank statements from imported values,
         filtering out already imported transactions,
-        and return data used by the reconciliation widget
+        and return data used by the reconciliation widget.
+
+        The statement record is always created (or found) even when every
+        transaction line is a duplicate, so that the statement header exists
+        and existing lines can be re-associated with it.
         """
-        abs_obj = self.env["account.bank.statement"]
         absl_obj = self.env["account.bank.statement.line"]
 
-        # Filter out already imported transactions and create statements.
-        existing_st_lines = {}
-        st_lines_to_create = []
         for st_vals in stmts_vals:
+            existing_st_lines = {}
+            st_lines_to_create = []
+
             for lvals in st_vals["transactions"]:
                 existing_line = False
                 if lvals.get("unique_import_id"):
                     existing_line = absl_obj.sudo().search(
-                        [
-                            ("unique_import_id", "=", lvals["unique_import_id"]),
-                        ],
+                        [("unique_import_id", "=", lvals["unique_import_id"])],
                         limit=1,
                     )
-                    # we can only have 1 anyhow because we have a unicity SQL constraint
+                    # we can only have 1 anyhow because of the unicity SQL constraint
                 if existing_line:
                     existing_st_lines[existing_line.id] = existing_line
-                    # Statement balance will be unaffected?
-                    #if "balance_start" in st_vals:
-                    #    st_vals["balance_start"] += float(lvals["amount"])
                 else:
                     st_lines_to_create.append(lvals)
 
-        # Remove values that won't be used to create records
-        st_vals.pop("transactions", None)
-
-        # Resequence lines
-        if len(st_lines_to_create) > 0:
-            if not st_lines_to_create[0].get("sequence"):
+            # Resequence new lines
+            if st_lines_to_create and not st_lines_to_create[0].get("sequence"):
                 for seq, vals in enumerate(st_lines_to_create, start=1):
                     vals["sequence"] = seq
 
-        # Create (or update) the statement with lines to be added
-        statement_id = self._find_or_create_statement_ids(st_vals, st_lines_to_create)
-        result["statement_ids"].extend([statement_id])
+            # Remove values that won't be used to create the statement record
+            st_vals.pop("transactions", None)
 
-        # Ensure existing lines are associated with this statement
-        for line_id, line in existing_st_lines.items():
-            if line.statement_id.id != statement_id:
-                line.write({'statement_id': statement_id})
+            # Always find or create the statement, even when all lines are duplicates
+            statement_id = self._find_or_create_statement_ids(st_vals, st_lines_to_create)
+            result["statement_ids"].append(statement_id)
 
-        # Prepare import feedback
-        num_ignored = len(existing_st_lines)
-        if num_ignored > 0:
-            message = _(
-                "%d transactions had already been imported and were ignored."
-            ) % num_ignored if num_ignored > 1 else _("1 transaction had already been imported and was ignored.")
-            result["notifications"].append(message)
+            # Re-associate any existing duplicate lines with this statement
+            for line_id, line in existing_st_lines.items():
+                if line.statement_id.id != statement_id:
+                    line.write({'statement_id': statement_id})
+
+            # Prepare import feedback
+            num_ignored = len(existing_st_lines)
+            if num_ignored > 0:
+                if num_ignored == 1:
+                    message = _("1 transaction had already been imported and was ignored.")
+                else:
+                    message = _(
+                        "%d transactions had already been imported and were ignored."
+                    ) % num_ignored
+                result["notifications"].append(message)
 
     # Override
     def _complete_stmts_vals(self, stmts_vals, journal, account_number):
@@ -125,8 +125,8 @@ class AccountStatementImport(models.TransientModel):
             line['statement_id'] = stmt.id
             absl_obj.create(line)
 
-        # Update statement ending value
+        # Update statement ending value (balance_end_real may not be set by all parsers)
         stmt.write({
-            'balance_end_real': st_vals['balance_end_real']
+            'balance_end_real': st_vals.get('balance_end_real', 0.0)
         })
         return stmt.id
