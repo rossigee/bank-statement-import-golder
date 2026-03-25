@@ -3,24 +3,20 @@
 
 {
     'name': 'Statement List Import Button',
-    'version': '16.0.1.0.1',
-    'author':
-        'Ross Golder',
+    'version': '16.0.1.1.0',
+    'author': 'Ross Golder',
     'website': 'https://golder.org/',
     'license': 'AGPL-3',
     'category': 'Accounting',
-    'summary': 'Add Import button to statement list view',
+    'summary': 'Add Import (OCA) button to bank statement list view',
     'depends': [
         'account_statement_import_base',
     ],
-    'data': [
-        'views/account_statement_import_button.xml',
-    ],
-    'qweb': [
-        'static/src/xml/button.xml',
-    ],
-    'js': [
-        'static/src/js/button.js',
-    ],
+    'assets': {
+        'web.assets_backend': [
+            'account_statement_import_button/static/src/xml/button.xml',
+            'account_statement_import_button/static/src/js/button.js',
+        ],
+    },
     'installable': True,
 }
