@@ -3,7 +3,7 @@
 import { patch } from "@web/core/utils/patch";
 import { ListController } from "@web/views/list/list_controller";
 
-patch(ListController.prototype, "account_statement_import_button.import", {
+patch(ListController.prototype, {
     get showImportStatementButton() {
         return this.props.resModel === "account.bank.statement";
     },
