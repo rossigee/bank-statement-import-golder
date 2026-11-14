@@ -13,9 +13,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - odoo-version: '16.0'
+          - odoo-version: '17.0'
             python-version: '3.11'
-          - odoo-version: '16.0'
+          - odoo-version: '17.0'
             python-version: '3.12'
 
     services:
