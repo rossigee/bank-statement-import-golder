@@ -5,10 +5,10 @@
 Allow bank statements to be (re)imported idempotently.
 """
 
-from calendar import monthrange
 import logging
+from calendar import monthrange
 
-from odoo import models, _
+from odoo import _, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
