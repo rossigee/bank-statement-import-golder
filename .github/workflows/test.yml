@@ -13,9 +13,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - odoo-version: '16.0'
+          - odoo-version: '17.0'
             python-version: '3.11'
-          - odoo-version: '16.0'
+          - odoo-version: '17.0'
             python-version: '3.12'
 
     services:
@@ -70,6 +70,7 @@ jobs:
     - name: Fetch Odoo requirements
       run: |
         curl -fsSL -o odoo-requirements.txt https://raw.githubusercontent.com/odoo/odoo/${{ matrix.odoo-version }}/requirements.txt
+        sed -i '/^PyPDF2==/d' odoo-requirements.txt
 
     - name: Install Python dependencies
       run: |
@@ -78,11 +79,15 @@ jobs:
         pip install coverage pytest pytest-odoo pytest-cov
         pip install flake8 black isort bandit[toml] safety
 
+    - name: Upgrade vulnerable dependencies
+      run: |
+        pip install --upgrade requests idna pyopenssl lxml lxml-html-clean werkzeug zeep urllib3 jinja2 gevent pillow
+
     - name: Lint with flake8
       run: |
         for dir in */; do
           if [ -f "${dir}__manifest__.py" ]; then
-            flake8 "$dir" --max-line-length=88 --extend-ignore=E203,W503,E501 || true
+            flake8 "$dir" --max-line-length=88 --extend-ignore=E203,W503,E501
           fi
         done
 
@@ -90,7 +95,7 @@ jobs:
       run: |
         for dir in */; do
           if [ -f "${dir}__manifest__.py" ]; then
-            black --check --line-length=88 "$dir" || true
+            black --check --line-length=88 "$dir"
           fi
         done
 
@@ -98,7 +103,7 @@ jobs:
       run: |
         for dir in */; do
           if [ -f "${dir}__manifest__.py" ]; then
-            isort --check-only --profile black "$dir" || true
+            isort --check-only --profile black "$dir"
           fi
         done
 
@@ -106,17 +111,17 @@ jobs:
       run: |
         for dir in */; do
           if [ -f "${dir}__manifest__.py" ]; then
-            bandit -r "$dir" || true
+            bandit -r "$dir"
           fi
         done
 
     - name: Check dependencies with safety
       run: |
-        safety check || true
+        safety check
 
     - name: Validate XML files
       run: |
-        find . -name "*.xml" -path "./.git" -prune -o -type f -exec xmllint --noout {} \; 2>/dev/null || true
+        find . -name "*.xml" -path "./.git" -prune -o -type f -exec xmllint --noout {} \;
 
     - name: Validate manifests
       run: |
