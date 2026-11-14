@@ -53,7 +53,7 @@ class TestCreateBankStatements(TransactionCase):
             'name': '2024-00',
             'journal_id': self.journal.id,
         })
-        existing_line = self.env['account.bank.statement.line'].create({
+        self.env['account.bank.statement.line'].create({
             'statement_id': other_stmt.id,
             'name': 'Pre-existing',
             'amount': 10.0,
@@ -155,7 +155,7 @@ class TestCreateBankStatements(TransactionCase):
         result = self._call(stmts_vals)
 
         stmt = self.env['account.bank.statement'].browse(result['statement_ids'][0])
-        new_lines = stmt.line_ids.filtered(lambda l: l.unique_import_id == 'uid-201')
+        new_lines = stmt.line_ids.filtered(lambda line: line.unique_import_id == 'uid-201')
         self.assertEqual(len(new_lines), 1, "Only the non-duplicate line should be created")
 
     def test_statement_already_exists_returns_existing(self):
