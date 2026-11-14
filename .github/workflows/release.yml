@@ -70,7 +70,7 @@ jobs:
     - name: Generate changelog
       id: changelog
       run: |
-        PREV_TAG=$(git describe --tags --abbrev=0 ${{ steps.version.outputs.tag }}^ 2>/dev/null || echo "")
+        PREV_TAG=$(git describe --tags --abbrev=0 ${{ steps.version.outputs.tag }}^ || echo "")
 
         if [[ -z "$PREV_TAG" ]]; then
           RANGE="${{ steps.version.outputs.tag }}"
