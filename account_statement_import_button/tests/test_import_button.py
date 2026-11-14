@@ -25,4 +25,4 @@ class TestImportButton(TransactionCase):
         view = self.env.ref('account.view_bank_statement_tree', raise_if_not_found=False)
         self.assertIsNotNone(view, "account.view_bank_statement_tree not found")
         self.assertEqual(view.model, 'account.bank.statement')
-        self.assertEqual(view.type, 'tree')
+        self.assertEqual(view.type, 'list')
