@@ -70,6 +70,7 @@ jobs:
     - name: Fetch Odoo requirements
       run: |
         curl -fsSL -o odoo-requirements.txt https://raw.githubusercontent.com/odoo/odoo/${{ matrix.odoo-version }}/requirements.txt
+        sed -i '/^PyPDF2==/d' odoo-requirements.txt
 
     - name: Install Python dependencies
       run: |
