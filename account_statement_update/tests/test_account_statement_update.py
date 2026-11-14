@@ -30,10 +30,16 @@ class TestCreateBankStatements(TransactionCase):
 
     def setUp(self):
         super().setUp()
+        suspense_account = self.env['account.account'].create({
+            'name': 'Test Update Suspense',
+            'code': 'TUPDS',
+            'account_type': 'asset_current',
+        })
         self.journal = self.env['account.journal'].create({
             'name': 'Test Update Journal',
             'type': 'bank',
             'code': 'TUPD',
+            'suspense_account_id': suspense_account.id,
         })
         self.wizard = self.env['account.statement.import'].sudo()
 
@@ -92,7 +98,7 @@ class TestCreateBankStatements(TransactionCase):
         )
         result = self._call(stmts_vals)
 
-        existing_line.refresh()
+        existing_line.invalidate_recordset()
         new_stmt_id = result['statement_ids'][0]
         self.assertEqual(
             existing_line.statement_id.id, new_stmt_id,
@@ -163,6 +169,11 @@ class TestCreateBankStatements(TransactionCase):
         existing_stmt = self.env['account.bank.statement'].create({
             'name': '2024-05', 'journal_id': self.journal.id,
         })
+        # In Odoo 18 the statement journal is derived from its lines, so seed one
+        self.env['account.bank.statement.line'].create({
+            'statement_id': existing_stmt.id, 'name': 'Seed', 'amount': 1.0,
+            'date': '2024-05-01', 'unique_import_id': 'uid-seed-05',
+        })
 
         stmts_vals = _make_stmts_vals(
             self.journal.id, '2024-05',
@@ -174,10 +185,11 @@ class TestCreateBankStatements(TransactionCase):
                          "Existing statement must be reused, not duplicated")
 
     def test_balance_end_real_missing_does_not_crash(self):
-        """Missing balance_end_real in st_vals does not raise KeyError."""
+        """Missing balance_end_real in st_vals does not raise KeyError,
+        and the statement keeps the Odoo-computed ending balance."""
         stmts_vals = _make_stmts_vals(
             self.journal.id, '2024-06',
-            [_make_line('uid-400')],
+            [_make_line('uid-400', amount=10.0)],
         )
         # Remove balance_end_real to simulate a parser that omits it
         del stmts_vals[0]['balance_end_real']
@@ -186,5 +198,22 @@ class TestCreateBankStatements(TransactionCase):
             result = self._call(stmts_vals)
         except KeyError as e:
             self.fail(f"KeyError raised for missing balance_end_real: {e}")
+
+        stmt = self.env['account.bank.statement'].browse(result['statement_ids'][0])
+        self.assertEqual(stmt.balance_end_real, stmt.balance_end,
+                         "balance_end_real must be left to Odoo when not supplied")
+
+    def test_statement_date_derived_from_lines(self):
+        """Odoo 18 derives the statement date from its posted lines; the
+        st_vals date is not stored."""
+        stmts_vals = _make_stmts_vals(
+            self.journal.id, '2024-07',
+            [_make_line('uid-500', amount=10.0)],
+        )
+        result = self._call(stmts_vals)
+
+        stmt = self.env['account.bank.statement'].browse(result['statement_ids'][0])
+        self.assertEqual(str(stmt.date), '2024-01-15',
+                         "Statement date must come from the last posted line")
 
         self.assertTrue(result['statement_ids'])
