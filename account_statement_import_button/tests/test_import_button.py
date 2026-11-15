@@ -27,4 +27,4 @@ class TestImportButton(TransactionCase):
         )
         self.assertIsNotNone(view, "account.view_bank_statement_tree not found")
         self.assertEqual(view.model, "account.bank.statement")
-        self.assertEqual(view.type, "tree")
+        self.assertEqual(view.type, "list")

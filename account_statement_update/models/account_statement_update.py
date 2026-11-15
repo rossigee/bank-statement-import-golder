@@ -6,7 +6,6 @@ Allow bank statements to be (re)imported idempotently.
 """
 
 import logging
-from calendar import monthrange
 
 from odoo import _, models
 from odoo.exceptions import UserError
@@ -105,11 +104,8 @@ class AccountStatementImport(models.TransientModel):
                 if not lvals.get("payment_ref"):
                     raise UserError(_("Missing payment_ref on a transaction."))
 
-            # Set statement date based on last day of month
-            year = int(st_vals["name"][0:4])
-            month = int(st_vals["name"][5:7])
-            st_vals["date"] = st_vals["name"] + "-" + str(monthrange(year, month)[1])
-
+        # Note: Odoo 18 derives account.bank.statement.date from its posted
+        # lines (compute, not writable), so no date is set here.
         return stmts_vals
 
     # Custom
@@ -133,6 +129,8 @@ class AccountStatementImport(models.TransientModel):
             line["statement_id"] = stmt.id
             absl_obj.create(line)
 
-        # Update statement ending value (balance_end_real may not be set by all parsers)
-        stmt.write({"balance_end_real": st_vals.get("balance_end_real", 0.0)})
+        # Odoo 18 computes balance_end_real from the lines when it is not
+        # written, so only override it when the parser supplied a value.
+        if "balance_end_real" in st_vals:
+            stmt.write({"balance_end_real": st_vals["balance_end_real"]})
         return stmt.id

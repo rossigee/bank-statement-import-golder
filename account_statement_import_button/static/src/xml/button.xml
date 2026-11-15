@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <t t-inherit="web.ListController" t-inherit-mode="extension">
+    <t t-inherit="web.ListView" t-inherit-mode="extension">
         <xpath expr="//button[hasclass('o_list_button_add')]" position="after">
             <button
                 t-if="showImportStatementButton"

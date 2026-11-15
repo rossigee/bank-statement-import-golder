@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [ '16.0', '17.0', 'develop' ]
+    branches: [ '16.0', '17.0', '18.0', 'develop' ]
   pull_request:
-    branches: [ '16.0', '17.0' ]
+    branches: [ '16.0', '17.0', '18.0' ]
   workflow_dispatch:
 
 jobs:
@@ -13,9 +13,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - odoo-version: '16.0'
+          - odoo-version: '18.0'
             python-version: '3.11'
-          - odoo-version: '16.0'
+          - odoo-version: '18.0'
             python-version: '3.12'
 
     services:
@@ -34,10 +34,10 @@ jobs:
           - 5432:5432
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -67,15 +67,15 @@ jobs:
           python3-xlwt \
           libxml2-utils
 
-    - name: Clone Odoo
+    - name: Fetch Odoo requirements
       run: |
-        git clone --depth 1 --branch ${{ matrix.odoo-version }} https://github.com/odoo/odoo.git odoo
+        curl -fsSL -o odoo-requirements.txt https://raw.githubusercontent.com/odoo/odoo/${{ matrix.odoo-version }}/requirements.txt
+        sed -i '/^PyPDF2==/d' odoo-requirements.txt
 
     - name: Install Python dependencies
       run: |
         pip install --upgrade pip wheel setuptools
-        sed -i '/^PyPDF2==/d' odoo/requirements.txt
-        pip install -r odoo/requirements.txt
+        pip install -r odoo-requirements.txt
         pip install --upgrade requests idna pyopenssl lxml lxml-html-clean werkzeug zeep urllib3 jinja2 gevent pillow python-ldap reportlab
         pip install coverage pytest pytest-odoo pytest-cov
         pip install flake8 black isort bandit[toml] safety
