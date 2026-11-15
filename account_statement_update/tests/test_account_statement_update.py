@@ -214,13 +214,14 @@ class TestCreateBankStatements(TransactionCase):
         existing_stmt = self.env["account.bank.statement"].create(
             {
                 "name": "2024-05",
-                "journal_id": self.journal.id,
             }
         )
-        # In Odoo 18 the statement journal is derived from its lines, so seed one
+        # In Odoo 18 the statement journal is computed from its lines' journal,
+        # so the seed line must carry the journal for the statement to match.
         self.env["account.bank.statement.line"].create(
             {
                 "statement_id": existing_stmt.id,
+                "journal_id": self.journal.id,
                 "name": "Seed",
                 "amount": 1.0,
                 "date": "2024-05-01",
