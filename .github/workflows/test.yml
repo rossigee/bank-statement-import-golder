@@ -76,7 +76,7 @@ jobs:
       run: |
         pip install --upgrade pip wheel setuptools
         pip install -r odoo-requirements.txt
-        pip install --upgrade requests idna pyopenssl lxml lxml-html-clean werkzeug zeep urllib3 jinja2 gevent pillow python-ldap reportlab
+        pip install --upgrade requests idna pyopenssl lxml lxml-html-clean werkzeug zeep urllib3 jinja2 gevent pillow python-ldap reportlab cbor2
         pip install coverage pytest pytest-odoo pytest-cov
         pip install flake8 black isort bandit[toml] safety
 
