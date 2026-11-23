@@ -80,6 +80,10 @@ jobs:
         pip install coverage pytest pytest-odoo pytest-cov
         pip install flake8 black isort bandit[toml] safety
 
+    - name: Upgrade vulnerable dependencies
+      run: |
+        pip install --upgrade requests idna pyopenssl lxml lxml-html-clean werkzeug zeep urllib3 jinja2 gevent pillow python-ldap reportlab
+
     - name: Lint with flake8
       run: |
         for dir in */; do

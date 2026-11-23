@@ -6,6 +6,7 @@ Allow bank statements to be (re)imported idempotently.
 """
 
 import logging
+from calendar import monthrange
 
 from odoo import _, models
 from odoo.exceptions import UserError
