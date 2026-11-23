@@ -3,7 +3,7 @@
 
 {
     "name": "Custom bank statements handler",
-    "version": "18.0.2.0.0",
+    "version": "19.0.2.0.0",
     "author": "Ross Golder",
     "website": "https://golder.org/",
     "license": "AGPL-3",
